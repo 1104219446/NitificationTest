@@ -32,5 +32,15 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         />
+    <Button
+        android:id="@+id/btn_add_sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="添加自定义消息通知"
+        app:layout_constraintTop_toBottomOf="@+id/btn_clear"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        />
+
 
 </android.support.constraint.ConstraintLayout>

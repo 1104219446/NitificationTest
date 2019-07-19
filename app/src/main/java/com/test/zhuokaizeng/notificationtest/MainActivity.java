@@ -6,14 +6,14 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -27,11 +27,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button mBtnAdd;
     private Button mBtnRemove;
     private Button mBtnClear;
+    private Button mBtnSp;
     public final static int MESSAGE_ADD=1;
     public final static int MESSAGE_CLEAR=2;
     public final static int MESSAGE_DELETE_BY_ID=3;
+    public final static int MESSAGE_ADD_SP=4;
+    public final static int MESSAGE_CLOSE=5;
     public final static String CHANNEL_ID="100";
-    private MyHandler myHandler;
+    public static MyHandler myHandler;
     public static int mNotificationId=0;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -53,12 +56,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBtnClear.setOnClickListener(this);
         mBtnRemove.setOnClickListener(this);
         mBtnAdd.setOnClickListener(this);
+        mBtnSp.setOnClickListener(this);
     }
 
     private void findView() {
         mBtnAdd=findViewById(R.id.btn_add);
         mBtnRemove=findViewById(R.id.btn_remove);
         mBtnClear=findViewById(R.id.btn_clear);
+        mBtnSp=findViewById(R.id.btn_add_sp);
     }
 
     @Override
@@ -73,12 +78,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn_clear:
                 myHandler.sendEmptyMessage(MESSAGE_CLEAR);
                 break;
+            case R.id.btn_add_sp:
+                myHandler.sendEmptyMessage(MESSAGE_ADD_SP);
+                break;
             default:
                 break;
         }
     }
 
-    private static class MyHandler extends Handler{
+    public static class MyHandler extends Handler{
 
         private final WeakReference<Activity>mActivity;
         private NotificationManager mNotificationManager;
@@ -111,7 +119,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 throw new NullPointerException("activity 为空");
             }else if(msg.what==MESSAGE_ADD){
                 Notification.Builder builder=new Notification.Builder(activity);
-
                 PendingIntent intent=PendingIntent.getActivity(activity,0,mIntent,0);
 
                 builder.setContentTitle("测试  "+mNotificationId) //必须提供
@@ -134,6 +141,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }else{
                     Toast.makeText(activity, "已经没有通知需要清除了", Toast.LENGTH_SHORT).show();
                 }
+            }else if(msg.what==MESSAGE_ADD_SP){
+
+                Notification.Builder builder=new Notification.Builder(activity);
+                Intent in=new Intent("close");
+                in.setPackage(activity.getPackageName());
+                PendingIntent intent=PendingIntent.getBroadcast(activity,0
+                        ,in,PendingIntent.FLAG_UPDATE_CURRENT);
+
+                MyNotificationView myNotificationView=new MyNotificationView(activity.getPackageName()
+                        ,R.layout.notification_item
+                        ,activity);
+                myNotificationView.setOnClickPendingIntent(R.id.btn_item_close,intent);
+
+                builder.setSmallIcon(R.mipmap.ic_launcher)
+                        .setOngoing(false)
+                        .setAutoCancel(true)
+                        .setCustomContentView(myNotificationView)
+                        .setChannelId(CHANNEL_ID)
+                        .setWhen(SystemClock.currentThreadTimeMillis())
+                        .setContentIntent(intent);
+                mNotificationManager.notify(mNotificationId++, builder.build());
+
+            }else if(msg.what==MESSAGE_CLOSE){
+                Toast.makeText(activity,"关闭成功",Toast.LENGTH_SHORT).show();
             }
 
             super.handleMessage(msg);

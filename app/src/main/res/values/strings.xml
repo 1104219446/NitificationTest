@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">NotificationTest</string>
+    <string name="song_back"><![CDATA[<]]></string>
+    <string name="song_like">♡</string>
 </resources>
